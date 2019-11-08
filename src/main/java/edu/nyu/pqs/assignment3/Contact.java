@@ -160,7 +160,7 @@ public class Contact implements Comparable<Contact> {
      * @param other the other builder object
      * @return the builder
      */
-    public Builder from(Contact other) {
+    public static Builder from(Contact other) {
       if (other == null) {
         throw new NullPointerException("Cannot build from a null contact.");
       }
