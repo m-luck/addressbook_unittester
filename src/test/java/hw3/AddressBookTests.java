@@ -4,6 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.DateTimeException;
 import java.time.MonthDay;
 import java.util.ArrayList;
@@ -184,15 +191,18 @@ public class AddressBookTests {
 	}
 
 	/* COMPARATORS */
-	
-//	This fails.
+
+//	Breaks. Null pointer exception.
 //	@Test
 //	public void testCompareToSame() {
-//		contactC = 
-//		int res = contactC.build().compareTo(contactC.build());
-//		assertTrue(res == 0);
+//		contactB = new Contact.Builder();
+//		contactB.firstName("Michael").lastName("Schidlowsky");
+//		Contact contactBbuilt = contactB.build();
+//		System.out.print(contactBbuilt.toString());
+//		int res = contactBbuilt.compareTo(contactBbuilt);
+//		assertEquals(res, 0);
 //	}
-	
+
 	@Test
 	public void testCompareToDiff() {
 		int res = contactC.build().compareTo(contactA.build());
@@ -218,7 +228,7 @@ public class AddressBookTests {
 	/********************************/	
 	
 	
-//	Trouble using class SearchableField.
+//	Trouble using class SearchableField as an API.
 //	@Test
 //	public void testSearchResult() {
 //		ArrayList<Contact> res = book.search(SearchableField.FIRST_NAME, "Michael");
@@ -265,12 +275,6 @@ public class AddressBookTests {
 		book.addContact(newC2);
 		book.addContact(newC2);
 	}
-
-//	Trouble using this.
-//	@Test
-//	public void testSearchResult() {
-//		SearchResult sr = new SearchResult(contactA.build(), 1);
-//	}
 	
 	@Test
 	public void testRemoveContact() {
@@ -320,14 +324,28 @@ public class AddressBookTests {
 		book.removeContacts(newC, null);
 	}
 	
-//	This test does not do what is expected (return contactA which has "Michael")
+//	Breaks. This test does not do what is expected (return contactA which has "Michael")
 //	@Test
 //	public void testSearchAllFields() {
+//		Builder contactA = new Contact.Builder();
+//		contactA.firstName("Michael").lastName("Lukiman");
 //		book.addContact(contactA.build());
+//		
 //		ArrayList<SearchResult> res = book.searchAllFields("Michael");
-//		assertEquals(res.get(0).relevance, 0); 
+//		assertEquals(res.get(0).relevance, 1); 
 //		
 //	}
+	
+	
+	@Test
+	public void testSearchAllFieldsLowerCaseSearch() {
+		Builder contactA = new Contact.Builder();
+		contactA.firstName("Michael").lastName("lukiman");
+		book.addContact(contactA.build());
+		
+		ArrayList<SearchResult> res = book.searchAllFields("michael");
+		assertEquals(res.get(0).relevance, 1); 
+	}
 	
 	@Test
 	public void testReplace() {
@@ -336,11 +354,30 @@ public class AddressBookTests {
 	}
 	
 	/* IMPORT / EXPORT */
-//	
-//	@Test
-//	public void testSave() {
-//		book.save();
-//	}
+	
+	@Test
+	public void testSave() {
+		Path file = Paths.get(".", "testBook.json");
+		System.out.print(file.toString());
+		try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
+		      book.save(writer);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testLoad() {
+		Path file = Paths.get(".", "testBook.json");
+		System.out.print(file.toString());
+		AddressBook book = null;
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+		  book = AddressBook.load(reader);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 }
 
 
