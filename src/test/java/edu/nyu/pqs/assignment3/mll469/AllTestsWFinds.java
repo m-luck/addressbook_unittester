@@ -24,10 +24,8 @@ import edu.nyu.pqs.assignment3.AddressBook.SearchResult;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.gson.JsonObject;
 
-
-public class ContactTests {
+public class AllTestsWFinds {
 
 	AddressBook book;
 	Builder contactA;
@@ -191,15 +189,15 @@ public class ContactTests {
 	/* COMPARATORS */
 
 //	Breaks. Null pointer exception.
-//	@Test
-//	public void testCompareToSame() {
-//		contactB = new Contact.Builder();
-//		contactB.firstName("Michael").lastName("Schidlowsky");
-//		Contact contactBbuilt = contactB.build();
-//		System.out.print(contactBbuilt.toString());
-//		int res = contactBbuilt.compareTo(contactBbuilt);
-//		assertEquals(res, 0);
-//	}
+	@Test
+	public void testCompareToSame() {
+		contactB = new Contact.Builder();
+		contactB.firstName("Michael").lastName("Schidlowsky");
+		Contact contactBbuilt = contactB.build();
+		System.out.print(contactBbuilt.toString());
+		int res = contactBbuilt.compareTo(contactBbuilt);
+		assertEquals(res, 0);
+	}
 
 	@Test
 	public void testCompareToDiff() {
@@ -346,6 +344,192 @@ public class ContactTests {
 			String response = new String();
 			for (String line; (line = reader.readLine()) != null; response += line);
 			contactA.email(response);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*** ADDRESS BOOK CLASS TESTS ***/
+	/********************************/	
+	
+	
+//	Trouble using class SearchableField as an API.
+//	@Test
+//	public void testSearchResult() {
+//		ArrayList<Contact> res = book.search(SearchableField.FIRST_NAME, "Michael");
+//	}
+	
+	@Test
+	public void testAddContact() {
+		Builder emptyBuilder = new Builder();
+		emptyBuilder.firstName("Neue");
+		Contact newC = emptyBuilder.build();
+		book.addContact(newC);
+	}
+	
+	@Test
+	public void testEmptyBook() {
+		 assertFalse(book.containsContact(contactA.build()));
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testAddContactNull() {
+		Contact newC = null;
+		book.addContact(newC);
+	}
+	
+	@Test
+	public void testAddContacts() {
+		Builder emptyBuilder = new Builder();
+		emptyBuilder.firstName("Neue");
+		Contact newC = emptyBuilder.build();
+		emptyBuilder.firstName("Neueue");
+		Contact newC2 = emptyBuilder.build();
+		book.addContacts(newC, newC2);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testAddContactsNull() {
+		Builder emptyBuilder = new Builder();
+		emptyBuilder.firstName("Neue");
+		Contact newC = null;
+		Contact newC2 = emptyBuilder.build();
+		book.addContacts(newC, newC2);
+	}
+	
+	@Test
+	public void testAddContactsAlreadyStored() {
+		Builder emptyBuilder = new Builder();
+		emptyBuilder.firstName("Neue");
+		Contact newC2 = emptyBuilder.build();
+		book.addContact(newC2);
+		book.addContact(newC2);
+	}
+	
+	@Test
+	public void testRemoveContact() {
+		Builder emptyBuilder = new Builder();
+		emptyBuilder.firstName("Neue");
+		Contact newC = emptyBuilder.build();
+		book.addContact(newC);
+		book.addContact(newC);
+		book.removeContact(newC);
+	}
+	
+	
+	@Test(expected = NullPointerException.class)
+	public void testRemoveContactNull() {
+		book.removeContact(null);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testRemoveContactNotExist() {
+		Builder emptyBuilder = new Builder();
+		emptyBuilder.firstName("Neue");
+		Contact newC = emptyBuilder.build();
+		book.removeContact(newC);
+	}
+	
+	@Test
+	public void testRemoveContacts() {
+		Builder emptyBuilder = new Builder();
+		emptyBuilder.firstName("Neue");
+		Contact newC = emptyBuilder.build();
+		emptyBuilder.firstName("Neueue");
+		Contact newC2 = emptyBuilder.build();
+		book.addContact(newC);
+		book.addContact(newC2);
+		book.removeContacts(newC, newC2);
+	}
+	
+	@Test(expected = NullPointerException.class)
+	public void testRemoveContactsNull() {
+		Builder emptyBuilder = new Builder();
+		emptyBuilder.firstName("Neue");
+		Contact newC = emptyBuilder.build();
+		emptyBuilder.firstName("Neueue");
+		Contact newC2 = emptyBuilder.build();
+		book.addContact(newC);
+		book.addContact(newC2);
+		book.removeContacts(newC, null);
+	}
+	
+//	This test does not do what is expected (return contactA which has "Michael")
+	@Test
+	public void testSearchAllFields() {
+		Builder contactA = new Contact.Builder();
+		contactA.firstName("Michael").lastName("Lukiman");
+		book.addContact(contactA.build());
+		
+		ArrayList<SearchResult> res = book.searchAllFields("Michael");
+		assertEquals(res.get(0).relevance, 1); 
+		
+	}
+	
+	
+	@Test
+	public void testSearchAllFieldsLowerCaseSearch() {
+		Builder contactA = new Contact.Builder();
+		contactA.firstName("Michael").lastName("lukiman");
+		book.addContact(contactA.build());
+		
+		ArrayList<SearchResult> res = book.searchAllFields("michael");
+		assertEquals(res.get(0).relevance, 1); 
+	}
+	
+	@Test
+	public void testReplace() {
+		book.addContact(contactA.build());
+		book.replaceContact(contactA.build(), contactB.build());
+	}
+	
+	/* IMPORT / EXPORT */
+	
+	@Test
+	public void testSave() {
+		book.addContact(contactB.build());
+		Path file = Paths.get(".", "testBook.json");
+		System.out.print(file.toString());
+		try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
+		      book.save(writer);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		File toDelete = new File(file.toString());
+		toDelete.delete();
+	}
+	
+	@Test
+	public void testLoad() {
+		book.addContact(contactB.build());
+		Path file = Paths.get(".", "testBook.json");
+		System.out.print(file.toString());
+		try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
+		      book.save(writer);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	
+		System.out.print(file.toString());
+		book = null;
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+			book = AddressBook.load(reader);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		File toDelete = new File(file.toString());
+		toDelete.delete();
+	}
+	
+	@Test(expected = com.google.gson.JsonSyntaxException.class) 
+	public void testNonsenseLoad() {
+		Path file = Paths.get(".", "shamu.txt");
+		System.out.print(file.toString());
+		book = null;
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+			book = AddressBook.load(reader);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

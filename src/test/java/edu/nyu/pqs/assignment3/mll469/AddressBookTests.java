@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 import edu.nyu.pqs.assignment3.*;
 import edu.nyu.pqs.assignment3.Contact.Builder;
-import edu.nyu.pqs.assignment3.Contact;
 import edu.nyu.pqs.assignment3.AddressBook.SearchResult;
 
 
@@ -64,6 +63,11 @@ public class AddressBookTests {
 		emptyBuilder.firstName("Neue");
 		Contact newC = emptyBuilder.build();
 		book.addContact(newC);
+	}
+	
+	@Test
+	public void testEmptyBook() {
+		 assertFalse(book.containsContact(contactA.build()));
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
@@ -181,6 +185,7 @@ public class AddressBookTests {
 	
 	@Test
 	public void testSave() {
+		book.addContact(contactB.build());
 		Path file = Paths.get(".", "testBook.json");
 		System.out.print(file.toString());
 		try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
@@ -195,6 +200,7 @@ public class AddressBookTests {
 	
 	@Test
 	public void testLoad() {
+		book.addContact(contactB.build());
 		Path file = Paths.get(".", "testBook.json");
 		System.out.print(file.toString());
 		try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
@@ -213,6 +219,18 @@ public class AddressBookTests {
 		
 		File toDelete = new File(file.toString());
 		toDelete.delete();
+	}
+	
+	@Test(expected = com.google.gson.JsonSyntaxException.class) 
+	public void testNonsenseLoad() {
+		Path file = Paths.get(".", "shamu.txt");
+		System.out.print(file.toString());
+		book = null;
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+			book = AddressBook.load(reader);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

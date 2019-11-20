@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 import edu.nyu.pqs.assignment3.*;
 import edu.nyu.pqs.assignment3.Contact.Builder;
-import edu.nyu.pqs.assignment3.Contact;
 import edu.nyu.pqs.assignment3.AddressBook.SearchResult;
 
 
@@ -165,11 +164,7 @@ public class AllTests {
 		Builder emptyBuilder = new Builder();
 		emptyBuilder.phoneNumber("1").build();
 	}
-	
-	@Test
-	public void testEmptyBook() {
-		 assertFalse(book.containsContact(contactA.build()));
-	}
+
 	
 	@Test
 	public void testAsJson() {
@@ -219,11 +214,140 @@ public class AllTests {
 	}
 	
 	@Test
+	public void testEqualsIdentical() {
+		Contact same = contactC.build();
+		boolean res = same.equals(same);
+		assertTrue(res);
+	}
+	
+	@Test
 	public void testEqualsDiff() {
 		boolean res = contactC.build().equals(contactA.build());
 		assertFalse(res);
 	}
 	
+	@Test
+	public void testEqualsNull() {
+		Contact n = null;
+		boolean res = contactC.build().equals(n);
+		assertFalse(res);
+	}
+	
+	@Test
+	public void testEqualsDiffType() {
+		String s = "Contact";
+		boolean res = contactC.build().equals(s);
+		assertFalse(res);
+	}
+	
+	@Test
+	public void testEqualsNullComplement() {
+		contactC.address("here");
+		contactC.note("wow");
+		contactC.phoneNumber("0");
+		contactC.email("p0tus@whitehouse.gov");
+		boolean res = contactA.build().equals(contactC.build());
+		assertFalse(res);
+	}
+	
+	@Test
+	public void testEqualsNullComplementExist() {
+		contactC.address("here");
+		contactC.note("wow");
+		contactC.phoneNumber("0");
+		contactC.email("p0tus@whitehouse.gov");
+		
+		contactA.address("2here");
+		contactA.note("wow2");
+		contactA.phoneNumber("20");
+		contactA.email("p0tus@whitehouse.gov2");
+		
+		boolean res = contactA.build().equals(contactC.build());
+		assertFalse(res);
+	}
+	
+	@Test
+	public void testEqualsNullComplementExist_SameAddress() {
+		contactC.address("here");
+		contactC.note("wow");
+		contactC.phoneNumber("0");
+		contactC.email("p0tus@whitehouse.gov");
+		
+		contactA.address("here");
+		contactA.note("wow2");
+		contactA.phoneNumber("20");
+		contactA.email("p0tus@whitehouse.gov2");
+		
+		boolean res = contactA.build().equals(contactC.build());
+		assertFalse(res);
+	}
+	
+	/* LONG STRINGS */
+		
+	@Test
+	public void testLong_address() {
+		Path file = Paths.get(".", "shamu.txt");
+		System.out.print(file.toString());
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+			String response = new String();
+			for (String line; (line = reader.readLine()) != null; response += line);
+			contactA.address(response);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testLong_note() {
+		Path file = Paths.get(".", "shamu.txt");
+		System.out.print(file.toString());
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+			String response = new String();
+			for (String line; (line = reader.readLine()) != null; response += line);
+			contactA.note(response);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testLong_firstName() {
+		Path file = Paths.get(".", "shamu.txt");
+		System.out.print(file.toString());
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+			String response = new String();
+			for (String line; (line = reader.readLine()) != null; response += line);
+			contactA.firstName(response);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testLong_lastName() {
+		Path file = Paths.get(".", "shamu.txt");
+		System.out.print(file.toString());
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+			String response = new String();
+			for (String line; (line = reader.readLine()) != null; response += line);
+			contactA.lastName(response);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testLong_email() {
+		Path file = Paths.get(".", "shamu.txt");
+		System.out.print(file.toString());
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+			String response = new String();
+			for (String line; (line = reader.readLine()) != null; response += line);
+			contactA.email(response);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/*** ADDRESS BOOK CLASS TESTS ***/
 	/********************************/	
@@ -241,6 +365,11 @@ public class AllTests {
 		emptyBuilder.firstName("Neue");
 		Contact newC = emptyBuilder.build();
 		book.addContact(newC);
+	}
+	
+	@Test
+	public void testEmptyBook() {
+		 assertFalse(book.containsContact(contactA.build()));
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
@@ -358,6 +487,7 @@ public class AllTests {
 	
 	@Test
 	public void testSave() {
+		book.addContact(contactB.build());
 		Path file = Paths.get(".", "testBook.json");
 		System.out.print(file.toString());
 		try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
@@ -372,6 +502,7 @@ public class AllTests {
 	
 	@Test
 	public void testLoad() {
+		book.addContact(contactB.build());
 		Path file = Paths.get(".", "testBook.json");
 		System.out.print(file.toString());
 		try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
@@ -390,6 +521,18 @@ public class AllTests {
 		
 		File toDelete = new File(file.toString());
 		toDelete.delete();
+	}
+	
+	@Test(expected = com.google.gson.JsonSyntaxException.class) 
+	public void testNonsenseLoad() {
+		Path file = Paths.get(".", "shamu.txt");
+		System.out.print(file.toString());
+		book = null;
+		try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+			book = AddressBook.load(reader);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 }
